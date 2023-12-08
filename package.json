@@ -1,0 +1,16 @@
+{
+  "name": "sportsmagazine-content-migration",
+  "version": "1.0.0",
+  "description": "Golf Digest content migration scripts.",
+  "main": ".",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Henry S.",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^22.1.0",
+    "@adobe/node-fetch-retry": "^2.2.0"
+  }
+}
