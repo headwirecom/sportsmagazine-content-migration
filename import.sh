@@ -3,7 +3,7 @@
 workingDir=$(pwd)
 
 lastUpdateTimestamp="2023-12-01T00:00:00-00:00"
-credentialsFile=$workingDir/tools/importer/data/credentials.json
+credentialsFile=$workingDir/tools/importer/data/credentials/credentials.json
 
 if [ $# -eq 0 ]; then
     echo "No arguments provided. Using default timestamp $lastUpdateTimestamp"
@@ -17,7 +17,7 @@ cliProjectName=franklin-importer-tools
 cliProjectRepo=https://github.com/headwirecom/$cliProjectName
 
 siteMapUrl=https://www.golfdigest.golf-prod.sports.aws.discovery.com/sitemaps/sitemap_golfdigest_index.xml
-gdriveFolderID=1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq
+gdriveFolderID="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"
 
 if [ ! -d "$docsFolder" ]; then
     echo "Creating $docsFolder folder."
@@ -51,6 +51,8 @@ uploadLog="$logsFolder/upload-$lastUpdateTimestamp.log"
 uploadErrorLog="$logsFolder/upload-error-$lastUpdateTimestamp.log"
 importLog="$logsFolder/import-$lastUpdateTimestamp.log"
 importErrorLog="$logsFolder/import-error-$lastUpdateTimestamp.log"
+cleanupLog="$logsFolder/cleanup-$lastUpdateTimestamp.log"
+cleanupErrorLog="$logsFolder/cleanup-error-$lastUpdateTimestamp.log"
 
 start_time=$(date +%s)
 
@@ -59,6 +61,7 @@ echo "Executing commands $cliProjectName/index.js"
 ./index.js urls -s $siteMapUrl -o $outputFile --mappingScript $workingDir/tools/importer/longurlsmapping.js -t $lastUpdateTimestamp > $urlsLog 2>>$urlsErrorLog
 ./index.js import -u $outputFile --ts $workingDir/tools/importer/import.mjs -t $docsFolder --async 5 --asyncPause 3000 >> $importLog 2>>$importErrorLog
 ./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode overwriteOlder > $uploadLog 2>>$uploadErrorLog
+./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode cleanup > $cleanupLog 2>>$cleanupErrorLog
 cd $workingDir
 
 end_time=$(date +%s)

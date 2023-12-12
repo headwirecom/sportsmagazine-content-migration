@@ -1,7 +1,7 @@
 tools/importer/helix-importer-ui/
 docs/
 logs/
-tools/importer/data/credentials.json
+tools/importer/data/credentials
 tools/importer/data/urls-*.json
 franklin-importer-tools/
 node_modules/
