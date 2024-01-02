@@ -803,9 +803,28 @@ function transformClubListingDOM(document, templateConfig) {
   };
 }
 
+function removeElements(content, selectors) {
+  selectors.forEach((s) => {
+    content.querySelectorAll(s).forEach((el) => { el.remove(); });
+  });
+}
+
 function transformCourseListingDOM(document, templateConfig) {
   const main = document.createElement('main');
-  const content = document.querySelector('.article-content');
+  const content = document.querySelector('.container-site');
+
+  removeElements(content, [
+    '.o-CourseHeader__m-RatingsContainer',
+    '.cmp-carousel__counter',
+    '.cmp-carousel__counter',
+    '.cmp-carousel__action',
+    '.supremeWidget',
+    '.panelistReviews',
+    '.readerReviews'
+  ]);
+
+  content.querySelectorAll('.m-Info__a-Section').forEach((el) => { el.insertAdjacentHTML('beforebegin', '<hr/>') } );
+
   main.append(content);
 
   const metadata = getOrCreateMetadataBlock(document, main);
@@ -841,8 +860,8 @@ const TRANSFORM_CONFIG = {
   Gallery: { template: 'Gallery', selector: ".slideshow-wrapper", category: "gallery", transformer: transformGalleryDOM },
   GalleryListicle: { template: 'Gallery Listicle', selector: ".photocards", category: "gallery", transformer: transformGalleryDOM },
   ProductListing: { template: 'Product Listing', selector: ".productListingPage", category: "product", transformer: transformProductDOM },
-  ClubListing: { template: 'Club Listing', selector: '.clubListingPage', category: 'clublisting', transformer: transformClubListingDOM } /*,
-  CourseListing: { template: 'Course Listing', selector: '.courseListingPage', category: 'courselisting', transformer: transformCourseListingDOM }*/
+  ClubListing: { template: 'Club Listing', selector: '.clubListingPage', category: 'clublisting', transformer: transformClubListingDOM } ,
+  CourseListing: { template: 'Course Listing', selector: '.courseListingPage', category: 'courselisting', transformer: transformCourseListingDOM }
 };
 
 function findTemplateConfig(document) {
