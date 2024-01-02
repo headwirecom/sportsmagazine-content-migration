@@ -20,7 +20,21 @@ async function fetchDocument(url) {
     }
 }
 
-function filterPageTypes(doc) {
+function filterPageTypes(doc, pageSelectors) {
+    if (pageSelectors) {
+        let supported = false;
+        pageSelectors.forEach((sel) => {
+            const el = doc.querySelector(sel);
+            if (el) {
+                supported = true;
+            }
+        });
+
+        if (!supported) {
+            throw new Error("Page doesn't match any valid page selector parameters.");
+        }
+    }
+
     unsupportedSelectors.forEach((sel) => {
         const el = doc.querySelector(sel);
         if (el) {
@@ -29,18 +43,19 @@ function filterPageTypes(doc) {
     });
 }
 
-async function fetchLongPath(url) {
+async function fetchLongPath(url, pageSelectors) {
     // console.log(`fetching long path from ${url}`);
     const doc = await fetchDocument(url);
     if (doc) {
-        filterPageTypes(doc);
+        filterPageTypes(doc, pageSelectors);
         return doc.body.getAttribute('data-page-path');
     }
 }
 
 const map = async (orgUrl, params) => {
     try {
-        const longPath = await fetchLongPath(orgUrl); 
+        const pageSelectors = (params && params['selectors']) ? params['selectors'] : null; 
+        const longPath = await fetchLongPath(orgUrl, pageSelectors); 
         if (longPath) {
             try {
                 const url = new URL(orgUrl);
@@ -51,7 +66,7 @@ const map = async (orgUrl, params) => {
         }
         return orgUrl;
     } catch (err) {
-        console.error(`${orgUrl}: ${err.message}`);
+        console.log(`${orgUrl}: ${err.message}`);
     }
 }
 
