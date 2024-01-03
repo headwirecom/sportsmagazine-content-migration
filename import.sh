@@ -58,10 +58,24 @@ start_time=$(date +%s)
 
 cd $cliProjectName
 echo "Executing commands $cliProjectName/index.js"
+#./index.js urls -s $siteMapUrl -o $outputFile --mappingScript $workingDir/tools/importer/longurlsmapping.js --mappingScriptParams $workingDir/tools/importer/data/pageselector-courses.json
+
+echo ""
+echo "./index.js urls -s $siteMapUrl -o $outputFile --mappingScript $workingDir/tools/importer/longurlsmapping.js -t $lastUpdateTimestamp > $urlsLog 2>>$urlsErrorLog"
 ./index.js urls -s $siteMapUrl -o $outputFile --mappingScript $workingDir/tools/importer/longurlsmapping.js -t $lastUpdateTimestamp > $urlsLog 2>>$urlsErrorLog
+
+echo ""
+echo "./index.js import -u $outputFile --ts $workingDir/tools/importer/import.mjs -t $docsFolder --async 5 --asyncPause 3000 >> $importLog 2>>$importErrorLog"
 ./index.js import -u $outputFile --ts $workingDir/tools/importer/import.mjs -t $docsFolder --async 5 --asyncPause 3000 >> $importLog 2>>$importErrorLog
+
+echo ""
+echo "./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode overwriteOlder > $uploadLog 2>>$uploadErrorLog"
 ./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode overwriteOlder > $uploadLog 2>>$uploadErrorLog
+
+echo ""
+echo "./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode cleanup > $cleanupLog 2>>$cleanupErrorLog"
 ./index.js upload -t $gdriveFolderID -s $docsFolder -c $credentialsFile --mode cleanup > $cleanupLog 2>>$cleanupErrorLog
+
 cd $workingDir
 
 end_time=$(date +%s)
