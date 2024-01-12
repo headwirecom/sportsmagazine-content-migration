@@ -398,28 +398,30 @@ function updateImage(el) {
 function processEmbeds(document, main, container) {
   // Create a section for each image embed with it's own section metadata
   container.querySelectorAll('.imageEmbed').forEach(imageEmbed => {
+    let alignmentClass = 'center-block';
+    if (imageEmbed.querySelector('.pull-right')) {
+      alignmentClass = 'pull-right';
+    } else if (imageEmbed.querySelector('.pull-left')) {
+      alignmentClass = 'pull-left';
+    }
+    let sectionBlock = createBlockTable(document, main, `Asset (${alignmentClass})`); // createSectionMetadata(document, main);
+    const pic = imageEmbed.querySelector('picture');
+    appendElementToBlock(sectionBlock, null, pic);
     const imageEmbedCredit = imageEmbed.querySelector('.o-ImageEmbed__a-Credit');
     const imageEmbedCaption = imageEmbed.querySelector('.o-ImageEmbed__a-Caption');
-    if (imageEmbedCredit || imageEmbedCaption) {
-      let sectionBlock = createSectionMetadata(document, main);
-      if (imageEmbedCredit) {
-        let heroImageCreditTxt = (imageEmbedCredit) ? imageEmbedCredit.innerHTML : '';
-        if (heroImageCreditTxt.includes('Photo By:')) {
-          heroImageCreditTxt = heroImageCreditTxt.replace('Photo By:','').trim();
-        }
-        imageEmbedCredit.remove();
-        appendToBlock(sectionBlock, 'Photo Credit', heroImageCreditTxt);
+    if (imageEmbedCredit) {
+      let heroImageCreditTxt = (imageEmbedCredit) ? imageEmbedCredit.innerHTML : '';
+      if (heroImageCreditTxt.includes('Photo By:')) {
+        heroImageCreditTxt = heroImageCreditTxt.replace('Photo By:','').trim();
       }
-      if (imageEmbedCaption) {
-        const imageEmbedCaptionTxt = (imageEmbedCaption.querySelector('p')) ? imageEmbedCaption.querySelector('p').innerHTML : imageEmbedCaption.innerHTML;
-        appendToBlock(sectionBlock, 'Photo Caption', imageEmbedCaptionTxt);
-        imageEmbedCaption.remove()
-      }
-    
-      imageEmbed.insertAdjacentHTML('beforebegin', '<hr/>');
-      imageEmbed.insertAdjacentElement('afterend', sectionBlock);
-      sectionBlock.insertAdjacentHTML('afterend', '<hr/>');
+      appendToBlock(sectionBlock, 'Photo Credit', heroImageCreditTxt);
     }
+    if (imageEmbedCaption) {
+      const imageEmbedCaptionTxt = (imageEmbedCaption.querySelector('p')) ? imageEmbedCaption.querySelector('p').innerHTML : imageEmbedCaption.innerHTML;
+      appendToBlock(sectionBlock, 'Photo Caption', imageEmbedCaptionTxt);
+    }
+    imageEmbed.insertAdjacentElement('afterend', sectionBlock);
+    imageEmbed.remove();
   });
 
   const tweets = container.querySelectorAll('.tweetEmbed');
@@ -479,10 +481,10 @@ function transformArticleDOM(document, templateConfig) {
 
   const articleHero = document.querySelector('.o-ArticleHero');
   const imageEmbed = document.querySelector('.o-ImageEmbed');
-  const imageEmbedCredit = document.querySelector('.o-ImageEmbed__a-Credit') ? 
-      document.querySelector('.o-ImageEmbed__a-Credit') : 
+  const imageEmbedCredit = (imageEmbed && imageEmbed.querySelector('.o-ImageEmbed__a-Credit')) ? 
+      imageEmbed.querySelector('.o-ImageEmbed__a-Credit') : 
       document.querySelector('.o-ArticleHero .o-ArticleInfo .a-Credit');
-  const imageEmbedCaption = document.querySelector('.o-ImageEmbed .o-ImageEmbed__a-Caption');
+  const imageEmbedCaption = (imageEmbed) ? imageEmbed.querySelector('.o-ImageEmbed__a-Caption') : null;
   const articleTitle = document.querySelector('.o-AssetTitle');
   const articleDescription = document.querySelector('.o-AssetDescription__a-Description');
   const articleBody = document.querySelector('.articleBody');
@@ -840,6 +842,52 @@ function transformCourseListingDOM(document, templateConfig) {
   };
 }
 
+async function transformVideoPageDOM(document, templateConfig) {
+  const main = document.createElement('main');
+
+  main.append(document.querySelector('.o-AssetTitle__a-Headline'));
+  main.append(document.querySelector('.o-AssetDescription__a-Description'));
+
+  const videoBlock = createSectionMetadata(document, main);
+  const videoEl = document.querySelector('.golf-video-wrapper').querySelector('video-js');
+  appendToBlock(videoBlock, 'Video ID', videoEl.getAttribute('data-video-id'));
+  appendToBlock(videoBlock, 'Player ID', videoEl.getAttribute('data-player'));
+
+  main.append(document.createElement('hr'));
+
+  main.append(document.querySelector('.o-Playlist'));
+
+  removeElements(main, ['.o-Playlist__a-Size', '.o-StoryCard__m-MediaWrap']);
+
+  await main.querySelectorAll('a.o-StoryCard').forEach(async (el) => { 
+    let url = el.getAttribute('href');
+    if (url.startsWith('//')) {
+      url = `https:${url}`;
+    } else if (url.startsWith('/')) {
+      url = `https://www.golfdigest.golf-prod.sports.aws.discovery.com${url}`;
+    }
+    try {
+      let longPath = await fetchLongPath(url);
+      let href = mapToFranklinPath(longPath);
+      el.querySelector('.o-StoryCard__a-HeadlineText').innerHTML = href;
+    } catch(e) {
+      let docPath = document.body.getAttribute('data-page-path');
+      console.error(`${docPath}: Unable to get franklin path for ${url}`, e);
+    }
+  });
+
+  const metadata = getOrCreateMetadataBlock(document, main);
+  appendMetadata(metadata, 'template', templateConfig.template);
+  appendMetadata(metadata, 'category', templateConfig.category);
+  appendPageMetadata(document, metadata);
+  return {
+    element: main,
+    report: {
+      title: document.title,
+    },
+  };
+}
+
 function mapToDocumentPath(document, url) {
   let franklinPath = null;
   let contentPath = document.body.getAttribute('data-page-path');
@@ -861,7 +909,8 @@ const TRANSFORM_CONFIG = {
   GalleryListicle: { template: 'Gallery Listicle', selector: ".photocards", category: "gallery", transformer: transformGalleryDOM },
   ProductListing: { template: 'Product Listing', selector: ".productListingPage", category: "product", transformer: transformProductDOM },
   ClubListing: { template: 'Club Listing', selector: '.clubListingPage', category: 'clublisting', transformer: transformClubListingDOM } ,
-  CourseListing: { template: 'Course Listing', selector: '.courseListingPage', category: 'courselisting', transformer: transformCourseListingDOM }
+  CourseListing: { template: 'Course Listing', selector: '.courseListingPage', category: 'courselisting', transformer: transformCourseListingDOM },
+  VideoPage: { template: 'Video', selector: '.videoPlayerPage', category: 'video', transformer: transformVideoPageDOM }
 };
 
 function findTemplateConfig(document) {
@@ -926,7 +975,7 @@ async function trasformDOM(document, url, documentPath) {
 
   if (templateConfig) {
     applyMarkupFixes(document);
-    retObj = templateConfig.transformer(document, templateConfig);
+    retObj = await templateConfig.transformer(document, templateConfig);
     await updateInternalLinks(retObj.element, url, retObj.report);
 
     const metadata = getOrCreateMetadataBlock(document, retObj.element);
