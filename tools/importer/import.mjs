@@ -136,7 +136,7 @@ async function updateLink(el, url, rewrites, err) {
         el.setAttribute('href', redirect);
         updateLink(el, url, rewrites, err);
       } else {
-        console.warn(`Unable to replace link ${el.href} with Franklin path. Item not found in sitemap.`);
+        // console.warn(`Unable to replace link ${el.href} with Franklin path. Item not found in sitemap.`);
         try {
           href = await fetchLongPath(proxyUrl);
         } catch(error) {
@@ -853,8 +853,7 @@ async function transformVideoPageDOM(document, templateConfig) {
   appendToBlock(videoBlock, 'Video ID', videoEl.getAttribute('data-video-id'));
   appendToBlock(videoBlock, 'Player ID', videoEl.getAttribute('data-player'));
 
-  main.append(document.createElement('hr'));
-
+  main.append(document.createElement('hr'));/*
   main.append(document.querySelector('.o-Playlist'));
 
   removeElements(main, ['.o-Playlist__a-Size', '.o-StoryCard__m-MediaWrap']);
@@ -874,7 +873,7 @@ async function transformVideoPageDOM(document, templateConfig) {
       let docPath = document.body.getAttribute('data-page-path');
       console.error(`${docPath}: Unable to get franklin path for ${url}`, e);
     }
-  });
+  });*/
 
   const metadata = getOrCreateMetadataBlock(document, main);
   appendMetadata(metadata, 'template', templateConfig.template);
