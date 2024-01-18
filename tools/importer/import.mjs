@@ -845,8 +845,8 @@ function transformCourseListingDOM(document, templateConfig) {
 async function transformVideoPageDOM(document, templateConfig) {
   const main = document.createElement('main');
 
-  main.append(document.querySelector('.o-AssetTitle__a-Headline'));
-  main.append(document.querySelector('.o-AssetDescription__a-Description'));
+  addEl(main, document.querySelector('.o-AssetTitle__a-Headline'));
+  addEl(main, document.querySelector('.o-AssetDescription__a-Description'));
 
   const videoBlock = createSectionMetadata(document, main);
   const videoEl = document.querySelector('.golf-video-wrapper').querySelector('video-js');
