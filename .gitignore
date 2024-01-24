@@ -1,5 +1,6 @@
 tools/importer/helix-importer-ui/
 docs/
+docs-updates/
 logs/
 tools/importer/data/credentials
 tools/importer/data/urls-*.json
