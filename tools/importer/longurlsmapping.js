@@ -21,6 +21,13 @@ async function fetchDocument(url) {
 }
 
 function filterPageTypes(doc, pageSelectors) {
+    unsupportedSelectors.forEach((sel) => {
+        const el = doc.querySelector(sel);
+        if (el) {
+            throw new Error(`Unsapported page type selector '${sel}'`);
+        }
+    });
+    
     if (pageSelectors) {
         let supported = false;
         pageSelectors.forEach((sel) => {
@@ -31,16 +38,10 @@ function filterPageTypes(doc, pageSelectors) {
         });
 
         if (!supported) {
-            throw new Error("Page doesn't match any valid page selector parameters.");
+            const bodyClass = doc.body.getAttribute('class');
+            throw new Error(`Page doesn't match any valid page selector parameters. Body element class: (${bodyClass})`);
         }
     }
-
-    unsupportedSelectors.forEach((sel) => {
-        const el = doc.querySelector(sel);
-        if (el) {
-            throw new Error(`Unsapported page type selector '${sel}'`);
-        }
-    });
 }
 
 async function fetchLongPath(url, pageSelectors) {
