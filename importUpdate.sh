@@ -13,7 +13,7 @@ else
     lastUpdateTimestamp=$1
 fi
 
-docsFolder=$workingDir/docs/$lastUpdateTimestamp
+docsFolder=$workingDir/docs-updates/$lastUpdateTimestamp
 logsFolder=$workingDir/logs/$lastUpdateTimestamp
 cliProjectName=franklin-importer-tools
 cliProjectRepo=https://github.com/headwirecom/$cliProjectName
