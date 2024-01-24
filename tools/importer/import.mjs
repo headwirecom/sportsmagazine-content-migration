@@ -887,6 +887,22 @@ async function transformVideoPageDOM(document, templateConfig) {
   };
 }
 
+function transformInstructorPageDOM(document, templateConfig) {
+  const main = document.createElement('main');
+  addEl(main, document.querySelector('#main-content'));
+
+  const metadata = getOrCreateMetadataBlock(document, main);
+  appendMetadata(metadata, 'template', templateConfig.template);
+  appendMetadata(metadata, 'category', templateConfig.category);
+  appendPageMetadata(document, metadata);
+  return {
+    element: main,
+    report: {
+      title: document.title,
+    },
+  };
+}
+
 function mapToDocumentPath(document, url) {
   let franklinPath = null;
   let contentPath = document.body.getAttribute('data-page-path');
@@ -909,7 +925,8 @@ const TRANSFORM_CONFIG = {
   ProductListing: { template: 'Product Listing', selector: ".productListingPage", category: "product", transformer: transformProductDOM },
   ClubListing: { template: 'Club Listing', selector: '.clubListingPage', category: 'clublisting', transformer: transformClubListingDOM } ,
   CourseListing: { template: 'Course Listing', selector: '.courseListingPage', category: 'courselisting', transformer: transformCourseListingDOM },
-  VideoPage: { template: 'Video', selector: '.videoPlayerPage', category: 'video', transformer: transformVideoPageDOM }
+  VideoPage: { template: 'Video', selector: '.videoPlayerPage', category: 'video', transformer: transformVideoPageDOM },
+  InstructorPage: { template: 'Instructor', selector: 'body.certifiedInstructorPage', category: 'instructor', transformer: transformInstructorPageDOM }
 };
 
 function findTemplateConfig(document) {
