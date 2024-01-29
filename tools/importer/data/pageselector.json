@@ -1,0 +1,13 @@
+{
+    "selectors": [
+        "body.articlePage",
+        "body.longformPage",
+        "body.openArticlePage",
+        "body.liveStreamArticlePage",
+        "body.photoGalleryPage",
+        "body.productListingPage",
+        "body.clubListingPage",
+        "body.courseListingPage",
+        "body.videoPlayerPage"
+    ]
+}
