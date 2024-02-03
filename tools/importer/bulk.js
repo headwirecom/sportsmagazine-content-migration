@@ -3,20 +3,14 @@ let [$urls, $operation, submit, log] = [...document.querySelectorAll('.id')];
 /* eslint-disable no-console */
 console.log(log);
 
-const append = (string) => {
+const append = (string, el = 'p', showCount = true) => {
   if (log) {
-    const p = document.createElement('p');
+    const p = document.createElement(el);
     p.innerHTML = string;
-    log.append(p);
+    log.append(p, showCount);
   }
   /* eslint-disable no-console */
   console.log(string);
-};
-
-const updateCounter = (count, length) => {
-  if (log && log.updateCounter) {
-    log.updateCounter(count, length);
-  }
 };
 
 const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0) => {
@@ -24,12 +18,10 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
     log = logger;
   }
 
-  let counter = startCount;
-
   const logIndexResponse = (path, text) => {
     const json = JSON.parse(text);
     const indeces = json.results;
-    let logTxt = `${counter}/${total}: ${path}`;
+    let logTxt = `${path}`;
     indeces.forEach((index) => {
       if (index.record) {
         let indexRecord = JSON.stringify(index.record);
@@ -48,7 +40,7 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
       }
     }
     statusTxt = statusTxt + '}';
-    append(`${counter}/${total}: ${path} ${statusTxt}`);
+    append(`${path} ${statusTxt}`, 'div');
   };
 
   const executeOperation = async (url) => {
@@ -58,8 +50,7 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
     const resp = await fetch(adminURL, {
       method: apiMethod,
     });
-    counter += 1;
-    updateCounter(counter,total);
+    log.updateCounter();
     const text = await resp.text();
     /* eslint-disable no-console */
     console.log(adminURL);
@@ -71,7 +62,7 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
         logStatusResponse(url, text);
       }
     } else {
-      append(`${counter}/${total}: FAILED ${operation} ${apiMethod} ${adminURL}: ${text}`);
+      append(`FAILED ${operation} ${apiMethod} ${adminURL}: ${text}`, 'div');
     }
   };
 
@@ -82,14 +73,14 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
         await executeOperation(url);
       } catch (e) {
         console.error(e);
-        append(`${counter}/${total}: FAILED ${url}`);
+        append(`FAILED ${url}`);
       }
     }
   };
 
   const concurrency = operation === 'live' ? 40 : 5;
   const total = urls.length + startCount;
-  append(`URLs: ${urls.length}`);
+  append(`URLs: ${urls.length}`, 'p', false);
   for (let i = 0; i < concurrency; i += 1) {
     dequeue();
   }
