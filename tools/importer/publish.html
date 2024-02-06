@@ -52,10 +52,6 @@
                 padding-left: 10px;
             }
         </style>
-        <!--
-        <script type="module">
-            import { Octokit } from "https://esm.sh/@octokit/core";
-        </script> -->
         <script src="./bulk.js" defer></script>
         <script>
             const projectHost = 'helix-sportsmagazine--headwirecom.hlx';
@@ -64,20 +60,6 @@
             let environment = 'main';
             let previewImportHost = `https://${environment}--${projectHost}.page`;
             let liveImportHost = `https://${environment}--${projectHost}.live`;
-/*
-            async function getEnvironments() {
-                const octokit = new Octokit({});
-
-                let resp = await octokit.request(`GET /repos/${owner}/${repo}/branches`, {
-                    owner: 'OWNER',
-                    repo: 'REPO',
-                    headers: {
-                        'X-GitHub-Api-Version': '2022-11-28'
-                    }
-                });
-            }*/
-
-            getEnvironments();
 
             const logger = {
                 count: 0,
@@ -270,6 +252,35 @@
                 }
                 disableInput(false);
             }
+        </script>
+        <script type="module">
+            import { Octokit } from "https://esm.sh/@octokit/core";
+
+            async function getEnvironments() {
+                const octokit = new Octokit({});
+
+                let resp = await octokit.request(`GET /repos/${owner}/${repo}/branches`, {
+                    owner: 'OWNER',
+                    repo: 'REPO',
+                    headers: {
+                        'X-GitHub-Api-Version': '2022-11-28'
+                    }
+                });
+
+                if (resp.data) {
+                    console.log('Yes! we have branches');
+                    for (const branch of resp.data) {
+                        const name = branch.name;
+                        const envEl = document.querySelector('.env-op');
+                        const optionEl = document.createElement('option');
+                        optionEl.innerHTML = name;
+                        optionEl.setAttribute('value', name);
+                        envEl.append(optionEl);
+                    }
+                }
+            }
+
+            getEnvironments();
         </script>
     </body>
 </html>
