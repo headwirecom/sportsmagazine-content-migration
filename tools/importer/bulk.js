@@ -1,7 +1,7 @@
-let [$urls, $operation, submit, log] = [...document.querySelectorAll('.id')];
+let [log] = [...document.querySelectorAll('.publish-logger')];
 
 /* eslint-disable no-console */
-console.log(log);
+// console.log(log);
 
 const append = (string, el = 'p', showCount = true) => {
   if (log) {
@@ -50,7 +50,9 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
     const resp = await fetch(adminURL, {
       method: apiMethod,
     });
-    log.updateCounter();
+    if (updateCounter) {
+      log.updateCounter();
+    }
     const text = await resp.text();
     /* eslint-disable no-console */
     console.log(adminURL);
@@ -85,9 +87,3 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
     dequeue();
   }
 };
-
-submit.addEventListener(('click'), () => {
-  const operation = $operation.value;
-  const urls = $urls.value.split('\n').map((e) => e.trim());
-  bulk(urls, operation);
-});
