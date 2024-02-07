@@ -58,12 +58,12 @@ async function initializeGapiClient() {
 }
 
 function gapiLoaded() {
-    console.log('gapi loaded');
+    // console.log('gapi loaded');
     gapi.load('client', initializeGapiClient);
 }
 
 function gisLoaded() {
-    console.log('gis loaded');
+    // console.log('gis loaded');
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
