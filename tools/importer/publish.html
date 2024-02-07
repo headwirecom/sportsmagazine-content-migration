@@ -162,9 +162,11 @@
             </div>
             <div class="form">
                 <label class="drive-folder-label" for="drive-folder">Google Drive Folder ID:</label>
-                <input class="drive-folder" size="50" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"/>
+                <input class="drive-folder" size="35" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"/>
                 <label class="context-label" for="drive-folder">Root Web Context:</label>
-                <input class="web-context" size="10" value="/"/>
+                <input class="web-context" size="20" value="/"/>
+                <label class="deep-folders-label" for="deep-folder">Publish Subfolders:</label>
+                <input class="deep-folders" type="checkbox" checked/>
                 <label class="env-op-label" for="env-op">Branch:</label>
                 <select class="env-op" onchange="envChange()">
                     <option value="main" selected>main</option>
@@ -200,6 +202,10 @@
         <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
         <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
         <script>
+            function isDeep() {
+                return document.querySelector(".deep-folders").checked;
+            }
+
             function disableInput(isDisabled = true) {
                 if (isDisabled) {
                     document.querySelector('.publish-btn').setAttribute('disabled', '');
@@ -221,7 +227,7 @@
                 let rootPath = document.querySelector('.web-context').value;
                 clearLog();
                 showLogger(true);
-                await scanFiles(folderId, onFileScanFile, true, rootPath);
+                await scanFiles(folderId, onFileScanFile, isDeep(), rootPath);
                 disableInput(false);
             }
 
@@ -244,7 +250,7 @@
                         urls = [];
                     }
                 } 
-                await scanFiles(folderId, callback, true, rootPath);
+                await scanFiles(folderId, callback, isDeep(), rootPath);
                 if (urls.length > 0) {
                     appendLog(`Processing ${urls.length} documents.`);
                     await bulk(urls, operation, getPublishLogger(), document.querySelector('.op-method').value, 0);
@@ -268,7 +274,6 @@
                 });
 
                 if (resp.data) {
-                    console.log('Yes! we have branches');
                     for (const branch of resp.data) {
                         const name = branch.name;
                         const envEl = document.querySelector('.env-op');
