@@ -11,6 +11,14 @@
                 margin-bottom: 5px;
                 display: none;
             }
+            .manual-form-toggle-label {
+                padding-left: 0px;
+                margin-left: 0px;
+            }
+            #manual-form-toggle {
+                margin-left: 0px;
+                margin-right: 50px;
+            }
             .publish-ui {
                 margin-top: 20px;
             }
@@ -112,10 +120,6 @@
                 }
             }
 
-            function isManualEntry() {
-                return document.querySelector('.page-type').value === 'manual';
-            }
-
             function publishOpChange() {
                 const op = document.querySelector('.publish-op').value;
                 
@@ -143,9 +147,15 @@
                 }
             }
 
+            function isManualEntry() {
+                return document.getElementById('manual-form-toggle').checked;
+            }
+
             function toggleManualForm(show) {
                 const display = show ? 'block' : 'none';
-                document.getElementById('url-list-container').style.display = display;
+                const displayGoogle = show ? 'none' : 'inline';
+                document.querySelector('.manual-form').style.display = display;
+                document.querySelectorAll('.google-form').forEach(el => { el.style.display = displayGoogle});
             }
         </script>
     </head>
@@ -153,20 +163,21 @@
         <div class="main">
             <div class="form manual-form">
                 <div>
-                    <label>Enter a list of URLs (one per line) and click Run.</label>
-                    <input id="manual-form-toggle" type="checkbox" onchange="toggleManualForm(this.checked)" checked/>
+                    <label>Enter a list of paths (one per line) and click Run.</label>
                 </div>
                 <div id="url-list-container">
                 <textarea id="url-list" rows="20" cols="150"></textarea>
                 </div>
             </div>
-            <div class="form">
-                <label class="drive-folder-label" for="drive-folder">Google Drive Folder ID:</label>
-                <input class="drive-folder" size="35" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"/>
-                <label class="context-label" for="drive-folder">Root Web Context:</label>
-                <input class="web-context" size="20" value="/"/>
-                <label class="deep-folders-label" for="deep-folder">Publish Subfolders:</label>
-                <input class="deep-folders" type="checkbox" checked/>
+            <div class="form main-form">
+                <label class="manual-form-toggle-label" for="manual-form-toggle">Manual Path Entry:</label>
+                <input id="manual-form-toggle" type="checkbox" onchange="toggleManualForm(this.checked)"/>
+                <label class="drive-folder-label google-form" for="drive-folder">Google Drive Folder ID:</label>
+                <input class="drive-folder google-form" size="35" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"/>
+                <label class="context-label google-form" for="drive-folder">Root Web Context:</label>
+                <input class="web-context google-form" size="20" value="/"/>
+                <label class="deep-folders-label google-form" for="deep-folder">Publish Subfolders:</label>
+                <input class="deep-folders google-form" type="checkbox" checked/>
                 <label class="env-op-label" for="env-op">Branch:</label>
                 <select class="env-op" onchange="envChange()">
                     <option value="main" selected>main</option>
@@ -186,7 +197,7 @@
                     <option value="DEL">DELETE</option>
                 </select>
                 <button class="publish-btn" onclick="run()" disabled>Run</button>
-                <button class="file-scan-btn" onclick="fileScan()" disabled>List Files</button>
+                <button class="file-scan-btn google-form" onclick="fileScan()" disabled>List Files</button>
             </div>
             <div class="form log-bottons">
                 <button class="show-log-btn log-btn" onclick="showLogger(true)">Show Publish Log</button>
@@ -231,8 +242,7 @@
                 disableInput(false);
             }
 
-            async function run() {
-                disableInput();
+            async function runGoogle() {
                 let folderId = document.querySelector('.drive-folder').value;
                 let rootPath = document.querySelector('.web-context').value;
                 clearLog();
@@ -245,7 +255,7 @@
                     let url = `${host}${filePath}`;
                     console.log(`publishing ${url}`)
                     urls.push(url);
-                    if (urls.length > 999) {
+                    if (urls.length > 99) {
                         await bulk(urls, operation, getPublishLogger(), document.querySelector('.op-method').value, 0);
                         urls = [];
                     }
@@ -255,6 +265,36 @@
                     appendLog(`Processing ${urls.length} documents.`);
                     await bulk(urls, operation, getPublishLogger(), document.querySelector('.op-method').value, 0);
                     urls = [];
+                }
+            }
+
+            async function publishManualEntry() {
+                clearLog();
+                showLogger(true);
+                
+                const userData = document.getElementById('url-list').value.trim();
+                const lines = userData.split('\n');
+                if (lines.length > 0) {
+                    const operation = document.querySelector('.publish-op').value;
+                    const host = (operation === 'live') ? liveImportHost : previewImportHost;
+                    const urls = [];
+                    for (const path of lines) {
+                        if (path.startsWith('/')) {
+                            let url = `${host}${path}`;
+                            console.log(`[manual] publishing ${url}`)
+                            urls.push(url);
+                        }
+                    }
+                    await bulk(urls, operation, getPublishLogger(), document.querySelector('.op-method').value, 0);
+                } 
+            }
+
+            async function run() {
+                disableInput(true);
+                if (isManualEntry()) {
+                    await publishManualEntry();
+                } else {
+                    await runGoogle();
                 }
                 disableInput(false);
             }
