@@ -48,9 +48,9 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
     const [branch, repo, owner] = hostname.split('.')[0].split('--');
     const adminURL = `https://admin.hlx.page/${operation}/${owner}/${repo}/${branch}${pathname}`;
     const resp = await fetch(adminURL, {
-      method: apiMethod,
+      method: apiMethod
     });
-    if (updateCounter) {
+    if (log.updateCounter !== "undefined") {
       log.updateCounter();
     }
     const text = await resp.text();
@@ -75,14 +75,17 @@ const bulk = async (urls, operation, logger, apiMethod = 'POST', startCount = 0)
         await executeOperation(url);
       } catch (e) {
         console.error(e);
-        append(`FAILED ${url}`);
+        if (log.updateCounter !== "undefined") {
+          log.updateCounter();
+        }
+        append(`FAILED ${url}: ${e.message}`, 'div');
       }
     }
   };
 
   const concurrency = operation === 'live' ? 40 : 5;
   const total = urls.length + startCount;
-  append(`URLs: ${urls.length}`, 'p', false);
+  // append(`URLs: ${urls.length}`, 'p', false);
   for (let i = 0; i < concurrency; i += 1) {
     dequeue();
   }
