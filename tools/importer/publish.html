@@ -96,6 +96,24 @@
                 return logger;
             }
 
+            function saveRunOptions() {
+                const folderId = document.querySelector('.drive-folder').value;
+                const rootPath = document.querySelector('.web-context').value;
+                const userData = document.getElementById('url-list').value
+                localStorage.setItem('drive-folder', folderId);
+                localStorage.setItem('web-context', rootPath);
+                localStorage.setItem('url-list', userData);
+            }
+
+            function loadRunOptions() {
+                const folderId = localStorage.getItem('drive-folder');
+                const rootPath = localStorage.getItem('web-context');
+                const userData = localStorage.getItem('url-list');
+                if (folderId !== undefined) document.querySelector('.drive-folder').value = folderId;
+                if (rootPath !== undefined) document.querySelector('.web-context').value = rootPath;
+                if (userData !== undefined) document.getElementById('url-list').value = userData;
+            }
+
             function showLogger(show) {
                 document.querySelector('.publish-logger-container').style.display = (show) ? 'block' : 'none';
                 document.querySelector('.hide-log-btn').style.display = (show) ? 'block' : 'none';
@@ -166,16 +184,16 @@
                     <label>Enter a list of paths (one per line) and click Run.</label>
                 </div>
                 <div id="url-list-container">
-                <textarea id="url-list" rows="20" cols="150"></textarea>
+                <textarea id="url-list" rows="20" cols="150" onchange="saveRunOptions()"></textarea>
                 </div>
             </div>
             <div class="form main-form">
                 <label class="manual-form-toggle-label" for="manual-form-toggle">Manual Path Entry:</label>
                 <input id="manual-form-toggle" type="checkbox" onchange="toggleManualForm(this.checked)"/>
                 <label class="drive-folder-label google-form" for="drive-folder">Google Drive Folder ID:</label>
-                <input class="drive-folder google-form" size="35" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq"/>
+                <input class="drive-folder google-form" size="35" value="1OudSl2TFxb6fyr6j7KA1UQIb8On-jMAq" onchange="saveRunOptions()"/>
                 <label class="context-label google-form" for="drive-folder">Root Web Context:</label>
-                <input class="web-context google-form" size="20" value="/"/>
+                <input class="web-context google-form" size="20" value="/" onchange="saveRunOptions()"/>
                 <label class="deep-folders-label google-form" for="deep-folder">Publish Subfolders:</label>
                 <input class="deep-folders google-form" type="checkbox" checked/>
                 <label class="env-op-label" for="env-op">Branch:</label>
@@ -213,6 +231,9 @@
         <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
         <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
         <script>
+
+            loadRunOptions();
+
             function isDeep() {
                 return document.querySelector(".deep-folders").checked;
             }
